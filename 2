@@ -1,0 +1,170 @@
+#!/bin/bash
+
+####################################################################################################
+###                                Functions defined to convert formats                          ###
+####################################################################################################
+
+# Argument 1 is the input filename
+# Argument 2 is the output filename
+# Argument 3 is the input filename - extension
+# Argument 4 is the input file extension
+# Argument 5 is the output filename - extension
+# Argument 6 is the output file extension
+
+tex2pdf() {
+	executing pdflatex -jobname="$5" $1
+}
+
+#END
+####################################################################################################
+
+conf_dir="${XDG_CONFIG_HOME:-~/.config}"
+user_additions="$conf_dir"/user_additions.bash
+[[ -f "$user_additions" ]] && . "$user_additions"
+
+cecho() {
+	type lolcat >/dev/null && {
+		echo -e "$@" | lolcat
+	} || {
+		echo -e "\x1b[31m$@\x1b[0m"
+	}
+}
+usage() {
+	cecho any2any - generate and convert files from any format to any format
+	echo 'Usage: 2 [Source.File]      [Generated.File]  (in any order)'
+	echo 'Usage: 2 [Source.File]  to  [Generated.File]  [extra options]'
+	echo 'Usage: 2 [Source.File]  to  [Extension     ]  [extra options]'
+	echo 'Usage: 2 [ Link Name ]  to  [Existing File ]'
+	echo
+	exit 1
+}
+executing() {
+	cecho "$@"
+	"$@" || {
+		echo
+		cecho "Command '$@' failed to execute! This script cannot handle this. Stopping..."
+		exit 1
+	}
+}
+fn_exists() {
+	LC_ALL=C type $1 2>/dev/null | grep -q 'is a function'
+}
+
+if [[ $# -lt 2 ]] ; then
+	usage
+fi
+
+if [[ $# == 2 ]] ; then
+	check_only_one_file=1
+	[ -e $1 ] && {
+		input_file=$1
+		output_file=$2
+	}
+	[ -e $2 ] && {
+		input_file=$2
+		output_file=$1
+	}
+
+	[[ -z $input_file ]] && {
+		cecho "Error! Input file \`$input_file\` does not exist!"
+		echo
+		usage
+	}
+	[[ -e $output_file ]] && {
+		cecho "Both files exist! To overwrite, use"
+		echo "2 '$input_file' to '$output_file'"
+		echo
+		usage
+	}
+fi
+
+if [[ $# -gt 2 ]] ; then
+	input_file=$1
+	shift
+	[ $1 = to ] || usage
+	shift
+	output_file=$1
+	shift
+fi
+
+input_path=`realpath -- $input_file`
+output_path=`realpath -- $output_file`
+input_filename=`basename -- $input_path`
+input_extension="${input_filename##*.}"
+input_filename="${input_filename%$input_extension}"
+input_filename="${input_filename%.}"
+output_filename=`basename -- $output_path`
+output_extension="${output_filename##*.}"
+output_filename="${output_filename%$output_extension}"
+output_filename="${output_filename%.}"
+
+# If we have output_file and no input_file then make a link between paths!
+[[ -e $output_path ]] && {
+	[[ -e $input_path ]] || {
+		cecho ln -s $output_file $input_file
+		exit 0
+	}
+}
+
+# Otherwise, we must have input_filename and input_extension and output_extension at least
+in="$input_filename.$input_extension"
+[[ -z $output_filename ]] && output_filename=$input_filename
+out="$output_filename.$output_extension"
+
+[[ -e "$in" ]] || {
+	cecho "File \`$in\` does not exist. Ensure it has an extension"
+	echo
+	usage
+}
+[[ -e "$out" ]] && {
+	tmpfile=`mktemp /tmp/any2any."$out".XXXXXXXXXX`
+	cecho "File \`$out\` exists! Backing it up. If this is in error, run"
+	echo cp "$tmpfile" "$out"
+	/bin/cp "$out" "$tmpfile" || exit 1 # use absolute path so -r cannot be passed
+	echo
+}
+
+# Now, simply check: does a function exist to convert from input_extension to output_extension
+fn_exists "$input_extension"2"$output_extension" || {
+	cecho "any2any: We do not know how to convert from .$input_extension to .$output_extension :("
+	echo
+	echo TODO automatically update this script and on git
+	echo
+	echo If you know how to do it, enter the commands required to automatically learn. If you do not, ctrl+C
+	echo '$1 is the input filename ; $2 is the output filename. Read `/bin/2` for more details'
+	cecho Example: markdown to pdf
+	echo 'pandoc $1 -o $2'
+	read formula
+
+	echo
+	cecho "$input_extension"'2'"$output_extension"'() {'
+	cecho '\t'$formula
+	cecho '}'
+	echo
+	cecho Testing...
+	[[ -e "$out" ]] && {
+		/bin/rm "$out"
+	}
+	bash -c "$formula" bash "$in" "$out" "$input_filename" "$input_extension" "$output_filename" "$output_extension" || {
+		echo
+		cecho Failed to run your formula...
+		exit 1
+	}
+	[[ -e "$out" ]] || {
+		echo
+		cecho Your program did not create the desired output file
+		exit 1
+	}
+
+	cecho Saving...
+	mkdir -p "$conf_dir"
+	echo "$input_extension"'2'"$output_extension"'() {' >>"$user_additions"
+	echo -e '\t'$formula >>"$user_additions"
+	echo '}' >>"$user_additions"
+	echo
+	cecho TODO automatically open a PR
+
+	exit 1
+}
+
+"$input_extension"2"$output_extension" "$in" "$out" "$input_filename" "$input_extension" "$output_filename" "$output_extension"
