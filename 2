@@ -17,14 +17,11 @@ tex2pdf() {
 pdf2txt() {
         require pdftotext $1 $2
 }
-md2html() {
-        require pandoc $1 -o $2
-}
 
 #END
 ####################################################################################################
 
-conf_dir="${XDG_CONFIG_HOME:-~/.config}"
+conf_dir="${XDG_CONFIG_HOME:-~/.config}/any2any"
 user_additions="$conf_dir"/user_additions.bash
 user_repo="$conf_dir"/any2any
 [[ -f "$user_additions" ]] && . "$user_additions"
@@ -59,6 +56,9 @@ require() {
 fn_exists() {
 	LC_ALL=C type $1 2>/dev/null | grep -q 'is a function'
 }
+export -f cecho
+export -f executing
+export -f require
 
 if [[ $# -lt 2 ]] ; then
 	usage
@@ -168,7 +168,7 @@ fn_exists "$fmt2fmt" || {
 		exit 1
 	}
 
-	cecho Saving...
+	cecho Saving locally to "$user_additions"...
 	mkdir -p "$conf_dir"
 	echo "$fmt2fmt"'() {' >>"$user_additions"
 	echo -e '\t'$formula >>"$user_additions"
@@ -182,6 +182,7 @@ fn_exists "$fmt2fmt" || {
 			cecho Unable to automatically fork repository. Fork github.com/magnus-ISU/any2any, clone it into
 			echo $user_repo
 			cecho Authenticate yourself for the '`gh`' command, and try again
+			exit 1
 		}
 	}
 	cd "$user_repo" || {
@@ -209,7 +210,7 @@ fn_exists "$fmt2fmt" || {
 		exit 1
 	}
 
-	sed -i 's/#END/'"$fmt2fmt"' () { '"$formula"' ; }\n#END/' ./2
+	sed -i 's/^#END$/'"$fmt2fmt"' () { '"$formula"' ; }\n#END/' ./2
 	executing git add 2
 
 	executing git commit -m "$fmt2fmt"
