@@ -26,6 +26,10 @@ png2webm () { require magick "$in" "$@" "$out" ; }
 png2jpg  () { require magick "$in" "$@" "$out" ; }
 jpg2webm () { require magick "$in" "$@" "$out" ; }
 jpg2png  () { require magick "$in" "$@" "$out" ; }
+mp42mp3  () { require ffmpeg -i "$in" -vn "$out" "$@" ; }
+mkv2mp3  () { require ffmpeg -i "$in" -vn "$out" "$@" ; }
+webm2mp3 () { require ffmpeg -i "$in" -vn "$out" "$@" ; }
+
 #END
 ####################################################################################################
 
