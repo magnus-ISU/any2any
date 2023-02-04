@@ -4,21 +4,21 @@
 ###                                Functions defined to convert formats                          ###
 ####################################################################################################
 
-# Argument 1 is the input filename
-# Argument 2 is the output filename
-# Argument 3 is the input filename - extension
-# Argument 4 is the input file extension
-# Argument 5 is the output filename - extension
-# Argument 6 is the output file extension
+# Argument $in       is the input filename
+# Argument $out      is the output filename
+# Argument $in_ext   is the input file extension
+# Argument $in_name  is the input filename - extension
+# Argument $out_ext  is the output file extension
+# Argument $out_name is the output filename - extension
 
 tex2pdf() {
-	require pdflatex -jobname="$5" $1
+	require pdflatex -jobname="$out_ext" "$in"
 }
 pdf2txt() {
-        require pdftotext $1 $2
+        require pdftotext "$in" "$out"
 }
 
-md2html () { require pandoc $1 -o $2 ; }
+md2html () { require pandoc "$in" -o "$out" ; }
 #END
 ####################################################################################################
 
@@ -100,14 +100,14 @@ fi
 
 input_path=`realpath -- $input_file`
 output_path=`realpath -- $output_file`
-input_filename=`basename -- $input_path`
-input_extension="${input_filename##*.}"
-input_filename="${input_filename%$input_extension}"
-input_filename="${input_filename%.}"
-output_filename=`basename -- $output_path`
-output_extension="${output_filename##*.}"
-output_filename="${output_filename%$output_extension}"
-output_filename="${output_filename%.}"
+in_name=`basename -- $input_path`
+export in_ext="${in_name##*.}"
+in_name="${in_name%$in_ext}"
+export in_name="${in_name%.}"
+out_name=`basename -- $output_path`
+export out_ext="${out_name##*.}"
+out_name="${out_name%$out_ext}"
+export out_name="${out_name%.}"
 
 # If we have output_file and no input_file then make a link between paths!
 [[ -e $output_path ]] && {
@@ -117,10 +117,10 @@ output_filename="${output_filename%.}"
 	}
 }
 
-# Otherwise, we must have input_filename and input_extension and output_extension at least
-in="$input_filename.$input_extension"
-[[ -z $output_filename ]] && output_filename=$input_filename
-out="$output_filename.$output_extension"
+# Otherwise, we must have in_name and in_ext and out_ext at least
+export in="$in_name.$in_ext"
+[[ -z $out_name ]] && out_name=$in_name
+export out="$out_name.$out_ext"
 
 [[ -e "$in" ]] || {
 	cecho "File \`$in\` does not exist. Ensure it has an extension"
@@ -135,18 +135,18 @@ out="$output_filename.$output_extension"
 	echo
 }
 
-# Now, simply check: does a function exist to convert from input_extension to output_extension
-fmt2fmt="$input_extension"2"$output_extension"
+# Now, simply check: does a function exist to convert from in_ext to out_ext
+fmt2fmt="$in_ext"2"$out_ext"
 fn_exists "$fmt2fmt" || {
-	cecho "any2any: We do not know how to convert from .$input_extension to .$output_extension :("
+	cecho "any2any: We do not know how to convert from .$in_ext to .$out_ext :("
 	echo
 	echo TODO automatically update this script and on git
 	echo
 	echo If you know how to do it, enter the commands required to automatically learn. If you do not, ctrl+C
 	echo 'Use `require` in front of a command to exit with an error message if that step fails. This is not... required'
-	echo '$1 is the input filename ; $2 is the output filename. Read `/bin/2` for more details'
+	echo '$in is the input filename ; $out is the output filename. Read `/bin/2` for more details'
 	cecho Example: markdown to pdf
-	echo 'require pandoc $1 -o $2'
+	echo 'require pandoc "$in" -o "$out"'
 	read formula
 
 	echo
@@ -158,7 +158,7 @@ fn_exists "$fmt2fmt" || {
 	[[ -e "$out" ]] && {
 		/bin/rm "$out"
 	}
-	bash -c "$formula" bash "$in" "$out" "$input_filename" "$input_extension" "$output_filename" "$output_extension" || {
+	bash -c "$formula" bash "$@" || {
 		echo
 		cecho Failed to run your formula...
 		exit 1
@@ -171,12 +171,10 @@ fn_exists "$fmt2fmt" || {
 
 	cecho Saving locally to "$user_additions"...
 	mkdir -p "$conf_dir"
-	echo "$fmt2fmt"'() {' >>"$user_additions"
-	echo -e '\t'$formula >>"$user_additions"
-	echo '}' >>"$user_additions"
+	echo "$fmt2fmt"'() { '"$formula"' ; }' >>"$user_additions"
 	echo
 
-	cecho TODO automatically open a PR
+	cecho Automatically open a PR
 	pushd "$conf_dir"
 	[[ -d "$user_repo" ]] || {
 		executing gh repo fork --clone magnus-ISU/any2any || {
@@ -225,4 +223,4 @@ fn_exists "$fmt2fmt" || {
 	exit 1
 }
 
-"$fmt2fmt" "$in" "$out" "$input_filename" "$input_extension" "$output_filename" "$output_extension"
+"$fmt2fmt" "$@"
