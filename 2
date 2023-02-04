@@ -17,6 +17,9 @@ tex2pdf() {
 pdf2txt() {
         require pdftotext $1 $2
 }
+md2html() {
+        require pandoc $1 -o $2
+}
 
 #END
 ####################################################################################################
@@ -47,6 +50,7 @@ executing() {
 	"$@" || {
 		echo
 		cecho "Command '$@' failed to execute!"
+		return 1
 	}
 }
 require() {
