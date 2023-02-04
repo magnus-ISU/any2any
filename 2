@@ -184,7 +184,7 @@ fn_exists "$fmt2fmt" || {
 
 	executing git push
 
-	executing gh pr create
+	executing gh pr create -B master -p magnus-ISU/any2any -b "$formula" -t "$fmt2fmt"
 
 	exit 1
 }
