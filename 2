@@ -20,6 +20,7 @@ tex2pdf() {
 
 conf_dir="${XDG_CONFIG_HOME:-~/.config}"
 user_additions="$conf_dir"/user_additions.bash
+user_repo="$conf_dir"/any2any
 [[ -f "$user_additions" ]] && . "$user_additions"
 
 cecho() {
@@ -101,7 +102,7 @@ output_filename="${output_filename%.}"
 # If we have output_file and no input_file then make a link between paths!
 [[ -e $output_path ]] && {
 	[[ -e $input_path ]] || {
-		cecho ln -s $output_file $input_file
+		executing ln -s $output_file $input_file
 		exit 0
 	}
 }
@@ -125,7 +126,8 @@ out="$output_filename.$output_extension"
 }
 
 # Now, simply check: does a function exist to convert from input_extension to output_extension
-fn_exists "$input_extension"2"$output_extension" || {
+fmt2fmt="$input_extension"2"$output_extension"
+fn_exists "$fmt2fmt" || {
 	cecho "any2any: We do not know how to convert from .$input_extension to .$output_extension :("
 	echo
 	echo TODO automatically update this script and on git
@@ -137,7 +139,7 @@ fn_exists "$input_extension"2"$output_extension" || {
 	read formula
 
 	echo
-	cecho "$input_extension"'2'"$output_extension"'() {'
+	cecho "$fmt2fmt"'() {'
 	cecho '\t'$formula
 	cecho '}'
 	echo
@@ -158,13 +160,33 @@ fn_exists "$input_extension"2"$output_extension" || {
 
 	cecho Saving...
 	mkdir -p "$conf_dir"
-	echo "$input_extension"'2'"$output_extension"'() {' >>"$user_additions"
+	echo "$fmt2fmt"'() {' >>"$user_additions"
 	echo -e '\t'$formula >>"$user_additions"
 	echo '}' >>"$user_additions"
 	echo
+
 	cecho TODO automatically open a PR
+	pushd "$conf_dir"
+	[[ -d "$user_repo" ]] || {
+		executing gh repo fork --clone magnus-ISU/any2any
+	}
+	cd "$user_repo"
+	executing git checkout master
+	executing git pull
+	executing git checkout -b "$fmt2fmt"
+
+	echo "$fmt2fmt"'() {' >>"$fmt2fmt".bash
+	echo -e '\t'$formula >>"$fmt2fmt".bash
+	echo '}' >>"$fmt2fmt".bash
+	executing git add "$fmt2fmt".bash
+
+	executing git commit -m "$fmt2fmt"
+
+	executing git push
+
+	executing gh pr create
 
 	exit 1
 }
 
-"$input_extension"2"$output_extension" "$in" "$out" "$input_filename" "$input_extension" "$output_filename" "$output_extension"
+"$fmt2fmt" "$in" "$out" "$input_filename" "$input_extension" "$output_filename" "$output_extension"
