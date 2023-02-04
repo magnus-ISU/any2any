@@ -12,7 +12,10 @@
 # Argument 6 is the output file extension
 
 tex2pdf() {
-	executing pdflatex -jobname="$5" $1
+	require pdflatex -jobname="$5" $1
+}
+pdf2txt() {
+        require pdftotext $1 $2
 }
 
 #END
@@ -43,9 +46,11 @@ executing() {
 	cecho "$@"
 	"$@" || {
 		echo
-		cecho "Command '$@' failed to execute! This script cannot handle this. Stopping..."
-		exit 1
+		cecho "Command '$@' failed to execute!"
 	}
+}
+require() {
+	executing "$@" || exit 1
 }
 fn_exists() {
 	LC_ALL=C type $1 2>/dev/null | grep -q 'is a function'
@@ -133,9 +138,10 @@ fn_exists "$fmt2fmt" || {
 	echo TODO automatically update this script and on git
 	echo
 	echo If you know how to do it, enter the commands required to automatically learn. If you do not, ctrl+C
+	echo 'Use `require` in front of a command to exit with an error message if that step fails. This is not... required'
 	echo '$1 is the input filename ; $2 is the output filename. Read `/bin/2` for more details'
 	cecho Example: markdown to pdf
-	echo 'pandoc $1 -o $2'
+	echo 'require pandoc $1 -o $2'
 	read formula
 
 	echo
