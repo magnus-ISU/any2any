@@ -21,6 +21,7 @@ md2html() {
         require pandoc $1 -o $2
 }
 
+md2html () { require pandoc $1 -o $2 ; }
 #END
 ####################################################################################################
 
@@ -209,7 +210,8 @@ fn_exists "$fmt2fmt" || {
 		exit 1
 	}
 
-	sed -i 's/#END/'"$fmt2fmt"' () { '"$formula"' ; }\n#END/' ./2
+	sed -i 's/md2html () { require pandoc $1 -o $2 ; }
+#END/'"$fmt2fmt"' () { '"$formula"' ; }\n#END/' ./2
 	executing git add 2
 
 	executing git commit -m "$fmt2fmt"
