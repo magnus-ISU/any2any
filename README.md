@@ -41,8 +41,8 @@ It is unreasonable to expect everyone to know all the commands to do all these; 
 
 This script works by checking a defined list of possible transformations. This has 3 limitations.
 
-1. If multiple ways to convert one file type into another exist, extra effort is required to support both. As most of the time you just want to be able to do *any* kind of transformation, and don't care about the minutia of how it happens.
-2. This script cannot easily check if you have the dependencies installed to run a command. But this is not a deal-breaker.
+1. If multiple ways to convert one file type into another exist, extra effort is required to support both. As most of the time you just want to be able to do *any* kind of transformation, and don't care about the minutia of how it happens, this is fine.
+2. This script cannot easily check if you have the dependencies installed to run a command. But an error message will at least tell you what you need to install in order to do it.
 3. Someone has to manually go through and define every way to transform one file into another.
 
 Here, (3) is the greatest threat to this program being useful. Thus, it is self-updating; whenever you encounter a file type it does not handle yet, it will prompt you to explain how to convert that and locally save the method. This on its own is not interesting.
