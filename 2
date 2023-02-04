@@ -199,9 +199,7 @@ fn_exists "$fmt2fmt" || {
 		exit 1
 	}
 
-	echo "$fmt2fmt"'() {'" $formula ; }" >>"$fmt2fmt".bash
 	sed -i 's/#END/'"$fmt2fmt"' () { '"$formula"' ; }\n#END/' ./2
-	executing git add "$fmt2fmt".bash
 	executing git add 2
 
 	executing git commit -m "$fmt2fmt"
