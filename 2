@@ -168,23 +168,49 @@ fn_exists "$fmt2fmt" || {
 	cecho TODO automatically open a PR
 	pushd "$conf_dir"
 	[[ -d "$user_repo" ]] || {
-		executing gh repo fork --clone magnus-ISU/any2any
+		executing gh repo fork --clone magnus-ISU/any2any || {
+			cecho Unable to automatically fork repository. Fork github.com/magnus-ISU/any2any, clone it into
+			echo $user_repo
+			cecho Authenticate yourself for the '`gh`' command, and try again
+		}
 	}
-	cd "$user_repo"
-	executing git checkout master
-	executing git pull
-	executing git checkout -b "$fmt2fmt"
+	cd "$user_repo" || {
+		cecho Unable to use the repository at
+		echo $user_repo
+		cecho Remove it and retry?
+		exit 1
+	}
+	executing git checkout master || {
+		cecho Unable to use the repository at
+		echo $user_repo
+		cecho Remove it and retry?
+		exit 1
+	}
+	executing git pull || {
+		cecho Unable to use the repository at
+		echo $user_repo
+		cecho Remove it and retry?
+		exit 1
+	}
+	executing git checkout -b "$fmt2fmt" || {
+		cecho Unable to use the repository at
+		echo $user_repo
+		cecho Remove it and retry?
+		exit 1
+	}
 
-	echo "$fmt2fmt"'() {' >>"$fmt2fmt".bash
-	echo -e '\t'$formula >>"$fmt2fmt".bash
-	echo '}' >>"$fmt2fmt".bash
+	echo "$fmt2fmt"'() {'" $formula ; }" >>"$fmt2fmt".bash
+	sed -i 's/#END/'"$fmt2fmt"' () { '"$formula"' ; }\n#END/' ./2
 	executing git add "$fmt2fmt".bash
+	executing git add 2
 
 	executing git commit -m "$fmt2fmt"
 
 	executing git push
 
-	executing gh pr create -B master -b "$formula" -t "$fmt2fmt" -p 'https://github.com/magnus-ISU/any2any'
+	echo
+	cecho If an option is given, select "'magnus-ISU/any2any'" '(since I can'\''t figure out how to automatically do it)'
+	executing gh pr create -B master -b "$formula" -t "$fmt2fmt" && exit 0
 
 	exit 1
 }
