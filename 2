@@ -20,6 +20,12 @@ pdf2txt() {
 
 md2html () { require pandoc "$in" -o "$out" "$@" ; }
 md2pdf () { require pandoc "$in" -o "$out" "$@" ; }
+webm2png () { require magick "$in" "$@" "$out" ; }
+webm2jpg () { require magick "$in" "$@" "$out" ; }
+png2webm () { require magick "$in" "$@" "$out" ; }
+png2jpg  () { require magick "$in" "$@" "$out" ; }
+jpg2webm () { require magick "$in" "$@" "$out" ; }
+jpg2png  () { require magick "$in" "$@" "$out" ; }
 #END
 ####################################################################################################
 
