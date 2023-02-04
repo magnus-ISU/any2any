@@ -145,9 +145,10 @@ fn_exists "$fmt2fmt" || {
 	echo
 	echo If you know how to do it, enter the commands required to automatically learn. If you do not, ctrl+C
 	echo 'Use `require` in front of a command to exit with an error message if that step fails. This is not... required'
-	echo '$in is the input filename ; $out is the output filename. Read `/bin/2` for more details'
+	echo 'Ending with "$@" allows users to pass further options to the command'
+	echo '$in is the input filename ; $out is the output filename. Read this script for more information'
 	cecho Example: markdown to pdf
-	echo 'require pandoc "$in" -o "$out"'
+	echo 'require pandoc "$in" -o "$out" "$@"'
 	read formula
 
 	echo
