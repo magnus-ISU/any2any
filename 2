@@ -12,13 +12,14 @@
 # Argument $out_name is the output filename - extension
 
 tex2pdf() {
-	require pdflatex -jobname="$out_ext" "$in"
+	require pdflatex -jobname="$out_ext" "$in" "$@"
 }
 pdf2txt() {
-        require pdftotext "$in" "$out"
+        require pdftotext "$in" "$out" "$@"
 }
 
-md2html () { require pandoc "$in" -o "$out" ; }
+md2html () { require pandoc "$in" -o "$out" "$@" ; }
+md2pdf () { require pandoc "$in" -o "$out" "$@" ; }
 #END
 ####################################################################################################
 
