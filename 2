@@ -184,7 +184,9 @@ fn_exists "$fmt2fmt" || {
 
 	executing git push
 
-	executing gh pr create -B master -b "$formula" -t "$fmt2fmt" -p 'https://github.com/magnus-ISU/any2any'
+	echo
+	cecho If an option is given, select "'magnus-ISU/any2any'"
+	executing gh pr create -B master -b "$formula" -t "$fmt2fmt"
 
 	exit 1
 }
