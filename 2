@@ -31,6 +31,7 @@ mkv2mp3  () { require ffmpeg -i "$in" -vn "$out" "$@" ; }
 webm2mp3 () { require ffmpeg -i "$in" -vn "$out" "$@" ; }
 
 docx2odt () { require libreoffice --convert-to "$out_ext" "$in" "$@" ; }
+pptx2pdf () { require libreoffice --convert-to "$out_ext" "$in" "$@" ; }
 #END
 ####################################################################################################
 
