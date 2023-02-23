@@ -36,6 +36,7 @@ webm2mp4 () { require ffmpeg -i "$in" "$out" "$@" ; }
 png2pdf () { require convert "$in" "$out" "$@" ; }
 docx2pdf () { require libreoffice --convert-to "$out_ext" "$in" "$@" ; }
 pdf2png () { require convert "$in" "$out" "$@" ; }
+pdf2jpg () { require convert "$in" "$out" "$@" ; }
 #END
 ####################################################################################################
 
